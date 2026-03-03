@@ -2,7 +2,7 @@
 
 A distributed file system with advanced orbital simulation, predictive caching, and energy-aware node selection. Built for high availability and performance in dynamic satellite networks.
 
-## 🚀 Features
+##  Features
 
 ### Core Distributed File System
 - **Multi-node storage** with automatic replication (2 replicas per chunk)
@@ -11,7 +11,7 @@ A distributed file system with advanced orbital simulation, predictive caching, 
 - **File reconstruction** from distributed chunks
 - **Automatic rebalancing** when nodes go offline
 
-### 🛰️ Orbital Intelligence (NOVEL FEATURES)
+###  Orbital Intelligence (NOVEL FEATURES)
 1. **Orbit-Aware Chunk Distribution**
    - Distributes chunks based on satellite visibility
    - Prefers cross-plane replication for fault tolerance
@@ -29,13 +29,13 @@ A distributed file system with advanced orbital simulation, predictive caching, 
    - Eclipse detection and energy drain modeling
    - Radiation zone impact on node reliability
 
-## 📋 System Requirements
+##  System Requirements
 
 - **Node.js** 16+ (recommended: 18+)
 - **Redis** (for leader election and metadata storage)
 - **Port availability** for 3 storage nodes and 1 master
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -65,7 +65,7 @@ A distributed file system with advanced orbital simulation, predictive caching, 
                     └─────────────────┘
 ```
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Install Dependencies
 
@@ -116,7 +116,7 @@ cd fs-lite/master
 node server.js 3000
 ```
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 fs-lite/
@@ -135,7 +135,7 @@ fs-lite/
 └── README.md
 ```
 
-## 🎮 API Endpoints
+##  API Endpoints
 
 ### Master Server (Port 3000)
 
@@ -163,7 +163,7 @@ fs-lite/
 - `DELETE /chunk/:chunkId` - Delete a chunk
 - `GET /health` - Node health status
 
-## 🧪 Testing the System
+##  Testing the System
 
 ### 1. Upload a File
 
@@ -194,7 +194,7 @@ curl http://localhost:3000/orbital/cache-stats | jq
 curl http://localhost:3000/orbital/energy | jq
 ```
 
-## 🛰️ Orbital Simulation Details
+##  Orbital Simulation Details
 
 ### Satellite Configuration
 - **Orbit Altitude**: 550 km (LEO)
@@ -218,7 +218,7 @@ curl http://localhost:3000/orbital/energy | jq
 - **Field of View**: ±75°
 - **Purpose**: Ground-to-satellite communication
 
-## 🔮 Predictive Features
+##  Predictive Features
 
 ### Eclipse Prediction
 The system predicts when satellites will enter eclipse and proactively:
@@ -236,21 +236,21 @@ The system predicts when satellites will enter eclipse and proactively:
 - Avoids nodes in eclipse with low energy
 - Considers solar panel efficiency and sunlit status
 
-## 📊 Monitoring and Logs
+##  Monitoring and Logs
 
 ### Master Server Logs
 ```
-🚀 Master master-3000 running on 3000
-🛰️  NOVEL FEATURES ACTIVE:
-   1️⃣  Orbit-aware chunk distribution (visibility + cross-plane)
-   2️⃣  Predictive orbital caching (eclipse + radiation + ground station)
-   3️⃣  Energy-aware node selection (solar/battery scoring)
+ Master master-3000 running on 3000
+  NOVEL FEATURES ACTIVE:
+   1️  Orbit-aware chunk distribution (visibility + cross-plane)
+   2️  Predictive orbital caching (eclipse + radiation + ground station)
+   3️  Energy-aware node selection (solar/battery scoring)
 ```
 
 ### Storage Node Logs
 ```
-🚀 Storage Node node-4001 running on port 4001
-✅ Connected to Redis
+ Storage Node node-4001 running on port 4001
+ Connected to Redis
 ```
 
 ### Real-time Monitoring
@@ -259,7 +259,7 @@ The system predicts when satellites will enter eclipse and proactively:
 - **Visibility Matrix**: Line-of-sight communication status
 - **Predictions**: Upcoming node unavailability alerts
 
-## 🔧 Configuration
+##  Configuration
 
 ### Port Configuration
 Edit the startup commands to use different ports:
@@ -291,7 +291,7 @@ const ORBIT_ALTITUDE = 550; // Change orbit height
 const SPEED_MULTIPLIER = 60; // Change simulation speed
 ```
 
-## 🚨 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -342,7 +342,7 @@ curl http://localhost:4003/health
 redis-cli ping
 ```
 
-## 📈 Performance Optimization
+##  Performance Optimization
 
 ### Cache Tuning
 - **File Cache**: 20 files, 200MB max
@@ -358,7 +358,7 @@ redis-cli ping
 - **Default**: 1 real second = 60 simulated seconds
 - **Adjust SPEED_MULTIPLIER** in orbital.js for faster/slower simulation
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -366,17 +366,17 @@ redis-cli ping
 4. Add tests for new functionality
 5. Submit a pull request
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - Built with Node.js and Express
 - Redis for distributed coordination
 - Multer for file upload handling
 - LRU Cache for performance optimization
 
-## 📞 Support
+##  Support
 
 For questions and support, please open an issue in the repository.
