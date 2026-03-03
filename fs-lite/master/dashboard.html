@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COSMEON FS-LITE | Mission Control</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1218;color:#c8cdd5;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px}
+
+/* Header */
+.topbar{background:#161b22;border-bottom:1px solid #21262d;padding:10px 24px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-left h1{font-size:14px;font-weight:600;color:#e6edf3;letter-spacing:0.3px}
+.topbar-left .sep{color:#30363d}
+.topbar-left .env{color:#58a6ff;font-size:12px;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:16px;font-size:11px;color:#7d8590}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+.status-dot.green{background:#3fb950}
+.status-dot.red{background:#f85149}
+
+/* Layout */
+.dashboard{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#21262d;padding:1px}
+.panel{background:#0d1117;padding:14px 16px;min-height:120px}
+.panel.span2{grid-column:span 2}
+.panel.span3{grid-column:span 3}
+.panel-header{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#7d8590;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #161b22;display:flex;justify-content:space-between;align-items:center}
+.panel-header .live{color:#3fb950;font-size:9px;font-weight:400;text-transform:none;letter-spacing:0}
+
+/* Orbit SVG */
+.orbit-wrap{display:flex;justify-content:center;padding:8px 0}
+.orbit-wrap svg{width:280px;height:280px}
+
+/* Satellite Table */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:6px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:#7d8590;border-bottom:1px solid #21262d;background:#0d1117}
+td{padding:6px 8px;border-bottom:1px solid #161b22}
+tr:hover{background:#161b22}
+.mono{font-family:'Cascadia Code','Fira Code',monospace;font-size:11px}
+
+/* Status indicators */
+.tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;letter-spacing:0.3px}
+.tag-green{background:#0d2818;color:#3fb950;border:1px solid #1a4021}
+.tag-yellow{background:#2d1f00;color:#d29922;border:1px solid #3d2b00}
+.tag-red{background:#2d0a0a;color:#f85149;border:1px solid #3d1414}
+.tag-blue{background:#0a1929;color:#58a6ff;border:1px solid #14293d}
+.tag-gray{background:#161b22;color:#7d8590;border:1px solid #21262d}
+
+/* Battery bar */
+.bat-bar{width:60px;height:4px;background:#21262d;border-radius:2px;display:inline-block;vertical-align:middle;margin-left:6px}
+.bat-fill{height:100%;border-radius:2px}
+
+/* Predictions */
+.pred-row{padding:8px 10px;border-left:2px solid #d29922;background:#161b22;margin-bottom:4px;font-size:11px;border-radius:0 4px 4px 0}
+.pred-row.high{border-left-color:#f85149}
+.pred-row .pred-title{font-weight:600;color:#e6edf3;margin-bottom:2px}
+.pred-row .pred-detail{color:#7d8590;font-size:10px}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:1px}
+.stat-cell{text-align:center;padding:12px 8px;background:#0d1117}
+.stat-cell .num{font-size:22px;font-weight:700;font-family:'Segoe UI',sans-serif}
+.stat-cell .label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#7d8590;margin-top:4px}
+.c-blue{color:#58a6ff}
+.c-green{color:#3fb950}
+.c-yellow{color:#d29922}
+.c-red{color:#f85149}
+.c-purple{color:#bc8cff}
+.c-gray{color:#7d8590}
+
+/* Upload area */
+.upload-zone{border:1px dashed #30363d;border-radius:6px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s}
+.upload-zone:hover{border-color:#58a6ff}
+.upload-zone input{display:none}
+.upload-zone .label{color:#7d8590;font-size:12px}
+.btn{padding:6px 16px;border-radius:4px;border:1px solid #30363d;background:#21262d;color:#c8cdd5;font-size:11px;font-weight:600;cursor:pointer;transition:background 0.2s}
+.btn:hover{background:#30363d}
+.btn:disabled{opacity:0.3;cursor:not-allowed}
+.btn-primary{background:#1f6feb;border-color:#1f6feb;color:#fff}
+.btn-primary:hover{background:#388bfd}
+.result-box{margin-top:8px;background:#161b22;border:1px solid #21262d;border-radius:4px;padding:8px 10px;font-family:monospace;font-size:10px;display:none;max-height:120px;overflow-y:auto;white-space:pre-wrap}
+
+/* Files list */
+.file-row{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid #161b22;font-size:11px}
+.file-row:hover{background:#161b22}
+.file-name{color:#e6edf3;font-weight:500}
+.file-meta{color:#7d8590;font-size:10px}
+
+/* Log */
+.log-area{background:#010409;border:1px solid #21262d;border-radius:4px;padding:8px;font-family:'Cascadia Code','Fira Code',monospace;font-size:10px;max-height:160px;overflow-y:auto;line-height:1.7}
+.log-line{color:#7d8590;border-bottom:1px solid #0d1117;padding:1px 0}
+.log-line .t{color:#484f58}
+.log-line.info .m{color:#58a6ff}
+.log-line.ok .m{color:#3fb950}
+.log-line.warn .m{color:#d29922}
+.log-line.err .m{color:#f85149}
+
+.footer{text-align:center;padding:6px;font-size:9px;color:#30363d;letter-spacing:0.5px;border-top:1px solid #21262d;background:#0d1117}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>COSMEON FS-LITE</h1>
+    <span class="sep">|</span>
+    <span class="env">Mission Control</span>
+  </div>
+  <div class="topbar-right">
+    <span><span class="status-dot green" id="statusDot"></span><span id="statusText">CONNECTED</span></span>
+    <span id="clock">--:--:--</span>
+  </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="stats-row" style="background:#21262d">
+  <div class="stat-cell"><div class="num c-blue" id="sNodes">-</div><div class="label">Active Nodes</div></div>
+  <div class="stat-cell"><div class="num c-green" id="sFiles">-</div><div class="label">Files Stored</div></div>
+  <div class="stat-cell"><div class="num c-purple" id="sHits">-</div><div class="label">Cache Hits</div></div>
+  <div class="stat-cell"><div class="num c-yellow" id="sPredictive">-</div><div class="label">Predictive Hits</div></div>
+  <div class="stat-cell"><div class="num c-blue" id="sPrefetch">-</div><div class="label">Pre-fetched</div></div>
+  <div class="stat-cell"><div class="num c-gray" id="sHitRate">-</div><div class="label">Hit Rate</div></div>
+</div>
+
+<div class="dashboard">
+
+  <!-- Orbital View -->
+  <div class="panel">
+    <div class="panel-header">Orbital View<span class="live">LIVE</span></div>
+    <div class="orbit-wrap">
+      <svg viewBox="0 0 280 280" id="orbitSvg">
+        <defs>
+          <radialGradient id="earthGrad" cx="50%" cy="50%"><stop offset="0%" stop-color="#1a3a5c"/><stop offset="100%" stop-color="#0d1f33"/></radialGradient>
+        </defs>
+        <!-- Earth -->
+        <circle cx="140" cy="140" r="36" fill="url(#earthGrad)" stroke="#1e3a5f" stroke-width="0.5"/>
+        <text x="140" y="143" text-anchor="middle" fill="#3d6a8f" font-size="9" font-weight="600">EARTH</text>
+        <!-- Orbit ring -->
+        <circle cx="140" cy="140" r="110" fill="none" stroke="#1e2530" stroke-width="0.8"/>
+        <!-- Sunlit half indicator -->
+        <path d="M 140 30 A 110 110 0 0 1 140 250" fill="none" stroke="#d29922" stroke-width="0.5" opacity="0.3" stroke-dasharray="3,3"/>
+        <!-- Eclipse half indicator -->
+        <path d="M 140 250 A 110 110 0 0 1 140 30" fill="none" stroke="#484f58" stroke-width="0.5" opacity="0.3" stroke-dasharray="3,3"/>
+        <text x="35" y="143" fill="#484f58" font-size="7" opacity="0.4">ECLIPSE</text>
+        <text x="225" y="143" fill="#d29922" font-size="7" opacity="0.4">SUNLIT</text>
+        <!-- SAA zone arc -->
+        <path id="saaArc" fill="none" stroke="#f85149" stroke-width="6" opacity="0.1"/>
+        <!-- Ground station -->
+        <rect x="136" y="93" width="8" height="8" rx="1" fill="none" stroke="#d29922" stroke-width="0.8"/>
+        <text x="149" y="100" fill="#7d8590" font-size="6">GS</text>
+        <!-- Satellites -->
+        <g id="satGroup"></g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Satellite Fleet -->
+  <div class="panel span2">
+    <div class="panel-header">Satellite Fleet<span class="live">LIVE</span></div>
+    <table>
+      <thead><tr><th>ID</th><th>Plane</th><th>Position</th><th>Light</th><th>Battery</th><th>Score</th><th>Radiation</th><th>Ground Stn</th><th>Status</th></tr></thead>
+      <tbody id="satTable"><tr><td colspan="9" style="color:#484f58">Loading...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Visibility Matrix -->
+  <div class="panel">
+    <div class="panel-header">Inter-Satellite Visibility</div>
+    <table>
+      <thead><tr><th>Pair</th><th>Angle</th><th>Link</th><th>Latency</th></tr></thead>
+      <tbody id="visTable"><tr><td colspan="4" style="color:#484f58">Loading...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Predictions -->
+  <div class="panel span2">
+    <div class="panel-header">Predictive Threat Detection<span class="live">LIVE</span></div>
+    <div id="predictions" style="color:#484f58">Loading...</div>
+  </div>
+
+  <!-- Upload -->
+  <div class="panel">
+    <div class="panel-header">Upload File</div>
+    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput">
+      <div class="label" id="fileLabel">Select file to upload</div>
+    </div>
+    <div style="margin-top:8px;text-align:right">
+      <button class="btn btn-primary" id="uploadBtn" disabled onclick="doUpload()">Upload</button>
+    </div>
+    <div class="result-box" id="uploadResult"></div>
+  </div>
+
+  <!-- Files -->
+  <div class="panel span2">
+    <div class="panel-header">Stored Files</div>
+    <div id="filesList" style="color:#484f58">No files</div>
+  </div>
+
+  <!-- Activity Log -->
+  <div class="panel span3">
+    <div class="panel-header">Activity Log</div>
+    <div class="log-area" id="logBox"></div>
+  </div>
+
+</div>
+
+<div class="footer">COSMEON FS-LITE v1.0 — Orbital Distributed File System — Auto-refresh 3s</div>
+
+<script>
+const API="";
+const COLORS={"SAT-ALPHA":"#58a6ff","SAT-BETA":"#bc8cff","SAT-GAMMA":"#3fb950"};
+let selFile=null, logs=[];
+
+function log(msg,type="info"){
+  logs.unshift({ts:new Date().toLocaleTimeString(),msg,type});
+  if(logs.length>40)logs.pop();
+  document.getElementById("logBox").innerHTML=logs.map(l=>
+    `<div class="log-line ${l.type}"><span class="t">[${l.ts}]</span> <span class="m">${l.msg}</span></div>`
+  ).join("");
+}
+
+setInterval(()=>{document.getElementById("clock").textContent=new Date().toLocaleTimeString()},1000);
+
+// File input
+document.getElementById("fileInput").addEventListener("change",function(e){
+  selFile=e.target.files[0];
+  if(selFile){
+    document.getElementById("fileLabel").textContent=selFile.name+` (${(selFile.size/1024).toFixed(1)} KB)`;
+    document.getElementById("uploadBtn").disabled=false;
+  }
+});
+
+async function doUpload(){
+  if(!selFile)return;
+  const btn=document.getElementById("uploadBtn"),res=document.getElementById("uploadResult");
+  btn.disabled=true;btn.textContent="Uploading...";
+  res.style.display="block";res.textContent="Processing...";
+  log("Upload started: "+selFile.name,"info");
+  try{
+    const fd=new FormData();fd.append("file",selFile);
+    const r=await fetch(`${API}/upload`,{method:"POST",body:fd});
+    const d=await r.json();
+    if(d.error){res.textContent="ERROR: "+d.error;log("Upload failed: "+d.error,"err");}
+    else{
+      const nodes=d.distribution?.nodesUsed?.map(n=>n.satelliteId).join(", ")||"-";
+      res.textContent=`OK | ID: ${d.fileId}\nChunks: ${d.totalChunks} | Hash: ${d.fileHash?.slice(0,20)}...\nMethod: ${d.distribution?.distributionMethod} | Nodes: ${nodes}`;
+      log(`Upload OK: ${selFile.name} > ${nodes} [${d.distribution?.distributionMethod}]`,"ok");
+      loadFiles();loadCache();
+    }
+  }catch(e){res.textContent="ERROR: "+e.message;log("Upload error: "+e.message,"err");}
+  btn.disabled=false;btn.textContent="Upload";
+}
+
+async function downloadFile(id,name){
+  log("Downloading: "+name,"info");
+  try{
+    const r=await fetch(`${API}/download/${id}`);
+    const b=await r.blob();
+    const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click();
+    log("Download complete: "+name,"ok");loadCache();
+  }catch(e){log("Download failed: "+e.message,"err");}
+}
+
+function renderOrbit(sats){
+  const g=document.getElementById("satGroup");g.innerHTML="";
+  const cx=140,cy=140,r=110;
+  sats.forEach(s=>{
+    const rad=(s.angle-90)*Math.PI/180;
+    const x=cx+r*Math.cos(rad),y=cy+r*Math.sin(rad);
+    const col=COLORS[s.satelliteId]||"#7d8590";
+    const op=s.alive?1:0.25;
+    g.innerHTML+=`<circle cx="${x}" cy="${y}" r="5" fill="${col}" opacity="${op}" stroke="#0d1117" stroke-width="1.5"/>`;
+    const lx=cx+(r+15)*Math.cos(rad),ly=cy+(r+15)*Math.sin(rad);
+    g.innerHTML+=`<text x="${lx}" y="${ly}" text-anchor="middle" fill="${col}" font-size="7" font-weight="600" opacity="${op}">${s.satelliteId.replace("SAT-","")}</text>`;
+    g.innerHTML+=`<text x="${lx}" y="${ly+8}" text-anchor="middle" fill="#484f58" font-size="6">${s.angle}°</text>`;
+  });
+}
+
+function renderSats(sats){
+  const el=document.getElementById("satTable");
+  el.innerHTML=sats.map(s=>{
+    const batCol=s.battery>60?"#3fb950":s.battery>30?"#d29922":"#f85149";
+    const statusTag=!s.alive?'<span class="tag tag-gray">OFFLINE</span>':
+      s.status==="HEALTHY"?'<span class="tag tag-green">HEALTHY</span>':
+      s.status==="MODERATE"?'<span class="tag tag-yellow">MODERATE</span>':
+      '<span class="tag tag-red">'+s.status+'</span>';
+    const radTag=s.radiationSeverity==="HIGH"?'<span class="tag tag-red">HIGH</span>':
+      s.radiationSeverity==="MEDIUM"?'<span class="tag tag-yellow">MED</span>':
+      '<span class="tag tag-green">SAFE</span>';
+    const gsTag=s.groundStationVisible?'<span class="tag tag-green">VISIBLE</span>':'<span class="tag tag-gray">NO LINK</span>';
+    return `<tr>
+      <td style="color:${COLORS[s.satelliteId]||'#c8cdd5'};font-weight:600">${s.satelliteId}</td>
+      <td class="mono">${s.planeId}</td>
+      <td class="mono">${s.angle}°</td>
+      <td>${s.sunlit?'<span style="color:#d29922">Sunlit</span>':'<span style="color:#484f58">Eclipse</span>'}</td>
+      <td><span style="color:${batCol}">${s.battery?.toFixed(1)}%</span><div class="bat-bar"><div class="bat-fill" style="width:${s.battery}%;background:${batCol}"></div></div></td>
+      <td class="mono">${s.score}</td>
+      <td>${radTag}</td>
+      <td>${gsTag}</td>
+      <td>${statusTag}</td>
+    </tr>`;
+  }).join("");
+}
+
+function renderVis(vis){
+  const el=document.getElementById("visTable");
+  el.innerHTML=vis.map(v=>`<tr>
+    <td>${v.node1.id} — ${v.node2.id}</td>
+    <td class="mono">${v.angleBetween}°</td>
+    <td>${v.visible?'<span class="tag tag-green">OK</span>':'<span class="tag tag-red">BLOCKED</span>'}</td>
+    <td class="mono">${v.estimatedLatency}ms</td>
+  </tr>`).join("");
+}
+
+function renderPreds(preds){
+  const el=document.getElementById("predictions");
+  if(!preds.length){el.innerHTML='<span class="tag tag-green">ALL CLEAR</span> <span style="color:#7d8590;font-size:11px;margin-left:6px">No threats detected</span>';return;}
+  el.innerHTML=preds.map(p=>{
+    const reasons=p.reasons.map(r=>`<div class="pred-detail">${r.type}: ${r.detail}</div>`).join("");
+    return `<div class="pred-row ${p.urgency.toLowerCase()}">
+      <div class="pred-title"><span class="tag ${p.urgency==='HIGH'?'tag-red':'tag-yellow'}">${p.urgency}</span> ${p.satelliteId} | ${p.battery.toFixed(1)}% | ${p.sunlit?'Sunlit':'Eclipse'} | Score: ${p.energyScore}</div>
+      ${reasons}
+      <div class="pred-detail" style="margin-top:3px">Action: ${p.recommendation}</div>
+    </div>`;
+  }).join("");
+}
+
+async function loadCache(){
+  try{
+    const r=await fetch(`${API}/orbital/cache-stats`);const d=await r.json();
+    document.getElementById("sHits").textContent=d.hits;
+    document.getElementById("sPredictive").textContent=d.predictiveHits;
+    document.getElementById("sPrefetch").textContent=d.prefetched;
+    document.getElementById("sHitRate").textContent=d.hitRate;
+  }catch(e){}
+}
+
+async function loadFiles(){
+  try{
+    const r=await fetch(`${API}/metadata`);const d=await r.json();
+    document.getElementById("sFiles").textContent=d.totalFiles;
+    const el=document.getElementById("filesList");
+    if(!d.files.length){el.innerHTML='<span style="color:#484f58;font-size:11px">No files uploaded</span>';return;}
+    el.innerHTML=d.files.map(f=>
+      `<div class="file-row">
+        <div><span class="file-name">${f.filename}</span><br><span class="file-meta">${f.totalChunks} chunks | ${f.orbitalInfo?.distributionMethod||'-'} | ${f.fileId.slice(0,12)}...</span></div>
+        <button class="btn" onclick="downloadFile('${f.fileId}','${f.filename}')">Download</button>
+      </div>`
+    ).join("");
+  }catch(e){}
+}
+
+async function refresh(){
+  try{
+    const r=await fetch(`${API}/orbital/status`);const d=await r.json();
+    const alive=d.satellites.filter(s=>s.alive).length;
+    document.getElementById("sNodes").textContent=alive+"/"+d.satellites.length;
+    document.getElementById("statusDot").className="status-dot green";
+    document.getElementById("statusText").textContent="CONNECTED";
+    renderOrbit(d.satellites);
+    renderSats(d.satellites);
+    renderVis(d.visibility);
+    renderPreds(d.predictions);
+    loadCache();
+    loadFiles();
+  }catch(e){
+    document.getElementById("statusDot").className="status-dot red";
+    document.getElementById("statusText").textContent="OFFLINE";
+  }
+}
+
+refresh();
+setInterval(refresh,3000);
+log("Dashboard initialized","info");
+log("Connecting to master node...","info");
+setTimeout(()=>log("Connection established","ok"),500);
+</script>
+</body>
+</html>
